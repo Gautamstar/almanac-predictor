@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Almanac Predictor: Stock Price Forecasting with LSTM</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-inner">
+    <span class="nav-logo">Almanac</span>
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#lstm">LSTM</a></li>
+      <li><a href="#pipeline">Data Pipeline</a></li>
+      <li><a href="#stack">Tech Stack</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header id="hero">
+  <div class="hero-bg">
+    <canvas id="candleCanvas"></canvas>
+  </div>
+  <div class="hero-content">
+    <div class="badge">Capstone Project 2025</div>
+    <h1>Real-Time Stock Prediction<br /><span class="accent">with Deep Learning</span></h1>
+    <p class="hero-sub">An end-to-end financial analytics platform powered by LSTM neural networks, Azure cloud infrastructure, and a multi-layer data pipeline that delivers 30-day price forecasts directly in the browser.</p>
+    <div class="hero-cta">
+      <a href="#lstm" class="btn-primary">Explore the LSTM</a>
+      <a href="#overview" class="btn-ghost">Project Overview</a>
+    </div>
+  </div>
+  <div class="scroll-hint">scroll</div>
+</header>
+
+<section id="overview">
+  <div class="container">
+    <div class="section-label">01 / Overview</div>
+    <h2>What is The Almanac Predictor?</h2>
+    <p class="section-intro">The Almanac Predictor is a full-stack financial intelligence platform that combines deep learning, cloud databases, and interactive visualization to help users understand and anticipate stock price movements.</p>
+
+    <div class="cards-grid">
+      <div class="card">
+        <h3>Stock Forecasting</h3>
+        <p>LSTM-based deep learning model trained on historical OHLCV data, generating 30-day forward price projections with a linear regression fallback for robustness.</p>
+      </div>
+      <div class="card">
+        <h3>Interactive Dashboard</h3>
+        <p>Four real-time chart types (line, price-change, bar, scatter) built with Chart.js. Select any ticker and see history plus predictions rendered instantly.</p>
+      </div>
+      <div class="card">
+        <h3>News Aggregation</h3>
+        <p>Relevant financial news pulled from live APIs and surfaced alongside price data, giving context behind price movements.</p>
+      </div>
+      <div class="card">
+        <h3>Portfolio Management</h3>
+        <p>Users can track a personal watchlist of stocks, review P/E ratios, book values, and OHLC metrics across their selected holdings.</p>
+      </div>
+      <div class="card">
+        <h3>Multi-Device Support</h3>
+        <p>Responsive web client built with Bootstrap 5, plus a Flutter mobile app. One backend serves both platforms via a unified REST API.</p>
+      </div>
+      <div class="card">
+        <h3>Cloud-Native Infrastructure</h3>
+        <p>Azure SQL Database as the silver-layer store, Azure Blob Storage for raw data, and Azure Data Factory orchestrating ingestion pipelines.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="architecture" class="dark-section">
+  <div class="container">
+    <div class="section-label">02 / Architecture</div>
+    <h2>System Architecture</h2>
+    <p class="section-intro">The platform is organized into four collaborating layers. Data flows top-down from raw market feeds to the user's screen, with the LSTM model sitting at the core of the prediction layer.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-layer-label">Data Sources</div>
+        <div class="arch-nodes">
+          <div class="arch-node source">yfinance<br/><span>Historical OHLCV</span></div>
+          <div class="arch-node source">FMP API<br/><span>Fundamentals &amp; News</span></div>
+          <div class="arch-node source">S&amp;P / NASDAQ<br/><span>Market Indices</span></div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">via Prefect Pipeline</div>
+
+      <div class="arch-layer">
+        <div class="arch-layer-label">Data Pipeline &amp; Storage</div>
+        <div class="arch-nodes">
+          <div class="arch-node storage">Azure Blob<br/><span>Bronze/Silver lake</span></div>
+          <div class="arch-node storage">Azure SQL<br/><span>Silver layer tables</span></div>
+          <div class="arch-node storage">Azure Data Factory<br/><span>ETL orchestration</span></div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">via Django ORM / pyodbc</div>
+
+      <div class="arch-layer">
+        <div class="arch-layer-label">Prediction &amp; API Layer</div>
+        <div class="arch-nodes">
+          <div class="arch-node model highlight-node">LSTM Model<br/><span>30-day forecasts</span></div>
+          <div class="arch-node model">Django REST<br/><span>JSON endpoints</span></div>
+          <div class="arch-node model">Linear Regression<br/><span>Fallback predictor</span></div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">via REST API / JSON</div>
+
+      <div class="arch-layer">
+        <div class="arch-layer-label">Client Layer</div>
+        <div class="arch-nodes">
+          <div class="arch-node client">Web (Bootstrap + Chart.js)<br/><span>Desktop browser</span></div>
+          <div class="arch-node client">Flutter App<br/><span>iOS &amp; Android</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="lstm">
+  <div class="container">
+    <div class="section-label">03 / Deep Dive</div>
+    <h2>Long Short-Term Memory Networks</h2>
+    <p class="section-intro">LSTM networks are the backbone of the Almanac Predictor's forecasting engine. Understanding why LSTMs excel at time-series data and how they are wired up here is key to understanding the whole system.</p>
+
+    <div class="content-block">
+      <h3>Why LSTM for Stock Prices?</h3>
+      <p>Stock prices are <strong>sequential, non-stationary time series</strong>. A standard feed-forward network treats each day's price independently, discarding the temporal order entirely. Recurrent Neural Networks (RNNs) introduced memory, but they suffer from the <strong>vanishing gradient problem</strong>: gradients shrink exponentially as they travel backward through time, making it impossible to learn dependencies spanning more than roughly 10 steps.</p>
+      <p>LSTMs solve this with a <strong>gated memory cell</strong> that can selectively remember information across hundreds of timesteps. This is critical for stock data because a trend established 60 trading days ago can still be relevant to tomorrow's price.</p>
+    </div>
+
+    <div class="lstm-anatomy">
+      <h3>Inside the LSTM Cell</h3>
+      <p>Every timestep passes through three gates before updating the hidden state:</p>
+
+      <div class="gates-grid">
+        <div class="gate-card forget">
+          <div class="gate-label">Forget Gate</div>
+          <div class="gate-formula">f<sub>t</sub> = &sigma;(W<sub>f</sub>&middot;[h<sub>t-1</sub>, x<sub>t</sub>] + b<sub>f</sub>)</div>
+          <p>Decides what portion of the previous cell state <em>C</em><sub>t-1</sub> to discard. A value near 0 means "forget everything"; near 1 means "keep everything."</p>
+          <p class="gate-example">In market terms: when a company announces a major restructuring, the forget gate zeroes out learned patterns from a completely different operating regime.</p>
+        </div>
+        <div class="gate-card input">
+          <div class="gate-label">Input Gate</div>
+          <div class="gate-formula">i<sub>t</sub> = &sigma;(W<sub>i</sub>&middot;[h<sub>t-1</sub>, x<sub>t</sub>] + b<sub>i</sub>)<br/>
+          C&#x303;<sub>t</sub> = tanh(W<sub>c</sub>&middot;[h<sub>t-1</sub>, x<sub>t</sub>] + b<sub>c</sub>)</div>
+          <p>Controls what new information gets written into the cell state. The candidate vector C&#x303;<sub>t</sub> proposes new values; the gate decides how much of that proposal survives.</p>
+          <p class="gate-example">A breakout above a 52-week high produces a large candidate value that the input gate amplifies into the cell state.</p>
+        </div>
+        <div class="gate-card cell">
+          <div class="gate-label">Cell State Update</div>
+          <div class="gate-formula">C<sub>t</sub> = f<sub>t</sub> &odot; C<sub>t-1</sub> + i<sub>t</sub> &odot; C&#x303;<sub>t</sub></div>
+          <p>The cell state is the LSTM's long-term memory, acting as a conveyor belt that carries information across many timesteps with minimal distortion and avoiding the vanishing gradient issue of plain RNNs.</p>
+        </div>
+        <div class="gate-card output">
+          <div class="gate-label">Output Gate</div>
+          <div class="gate-formula">o<sub>t</sub> = &sigma;(W<sub>o</sub>&middot;[h<sub>t-1</sub>, x<sub>t</sub>] + b<sub>o</sub>)<br/>
+          h<sub>t</sub> = o<sub>t</sub> &odot; tanh(C<sub>t</sub>)</div>
+          <p>Filters the cell state to produce the hidden state h<sub>t</sub>, the short-term output passed both to the next cell and to the prediction head.</p>
+          <p class="gate-example">Only the features relevant to the current prediction step (e.g., recent momentum) are surfaced, while long-term baselines stay in C<sub>t</sub>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <h3>Input Features</h3>
+      <p>Each timestep feeds a <strong>7-column feature vector</strong> drawn from the Azure SQL silver layer:</p>
+      <div class="feature-table-wrap">
+        <table class="feature-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type</th>
+              <th>Role in the Model</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Symbol</code></td>
+              <td>Categorical</td>
+              <td>Stock ticker identifier (e.g., AAPL). Encoded before training.</td>
+            </tr>
+            <tr>
+              <td><code>Date</code></td>
+              <td>Temporal</td>
+              <td>Trading date. Sorted ascending so sequences respect chronological order.</td>
+            </tr>
+            <tr>
+              <td><code>Close_Prices</code></td>
+              <td>Float</td>
+              <td>Primary prediction target. Used as the label and also as an input feature.</td>
+            </tr>
+            <tr>
+              <td><code>High_Prices</code></td>
+              <td>Float</td>
+              <td>Intraday high; contributes to volatility signals in the hidden state.</td>
+            </tr>
+            <tr>
+              <td><code>Low_Prices</code></td>
+              <td>Float</td>
+              <td>Intraday low; combined with High to compute trading range.</td>
+            </tr>
+            <tr>
+              <td><code>Open_Prices</code></td>
+              <td>Float</td>
+              <td>Opening price; gap between Open and previous Close is a key momentum indicator.</td>
+            </tr>
+            <tr>
+              <td><code>Volume</code></td>
+              <td>Float</td>
+              <td>Number of shares traded. High volume often confirms price moves and the model uses this to weight trends.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The backend queries the last <strong>30 trading days</strong> of data, sorts rows by date ascending, and writes a temporary CSV to disk before passing the path to the model's <code>predict()</code> method.</p>
+    </div>
+
+    <div class="content-block">
+      <h3>Prediction Sequence</h3>
+      <div class="sequence-diagram">
+        <div class="seq-step">
+          <div class="seq-num">1</div>
+          <div class="seq-body">
+            <strong>Query</strong>
+            <p>Django fetches <code>TOP 30</code> rows for <code>AAPL</code> from <code>StockPriceSilverData_Table</code>, ordered newest-first, then re-sorted ascending.</p>
+          </div>
+        </div>
+        <div class="seq-arrow">|</div>
+        <div class="seq-step">
+          <div class="seq-num">2</div>
+          <div class="seq-body">
+            <strong>Serialize to CSV</strong>
+            <p>The DataFrame is written to a temp file at <code>%TEMP%/stock_data_for_model.csv</code>. The model interface expects a file path rather than an in-memory array, keeping the training and inference interfaces identical.</p>
+          </div>
+        </div>
+        <div class="seq-arrow">|</div>
+        <div class="seq-step">
+          <div class="seq-num">3</div>
+          <div class="seq-body">
+            <strong>Load and Infer</strong>
+            <p>The pre-trained model is deserialized from <code>lstm_model.pkl</code> using <code>joblib.load()</code>. <code>LSTMModel</code> is injected into <code>sys.modules['__main__']</code> so joblib can locate the class during unpickling.</p>
+          </div>
+        </div>
+        <div class="seq-arrow">|</div>
+        <div class="seq-step">
+          <div class="seq-num">4</div>
+          <div class="seq-body">
+            <strong>Output Dispatch</strong>
+            <p>The prediction return type is introspected and dispatched:</p>
+            <ul class="dispatch-list">
+              <li><code>None</code>: linear regression fallback (30-day horizon)</li>
+              <li><code>scalar / 0-d array</code>: linear interpolation from last close to predicted value</li>
+              <li><code>array-like</code>: reversed and trimmed to 30 points, overlaid on chart</li>
+            </ul>
+          </div>
+        </div>
+        <div class="seq-arrow">|</div>
+        <div class="seq-step">
+          <div class="seq-num">5</div>
+          <div class="seq-body">
+            <strong>Chart JSON</strong>
+            <p>Historical data and prediction arrays are merged into the response JSON. The prediction series is annotated with <code>borderDash: [5, 5]</code> (dashed red line) so users can distinguish forecasts from actuals.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block fallback-block">
+      <div>
+        <h3>Robust Fallback: Linear Regression</h3>
+        <p>Production ML systems should fail gracefully. If the LSTM model returns <code>None</code>, raises an exception, or outputs an incompatible type, the backend automatically switches to scikit-learn's <code>LinearRegression</code>. It fits a trend line on the 30-day closing price history, then projects it 30 days forward, ensuring the user always receives a prediction and never a blank chart.</p>
+        <p>The fallback series is labeled "Fallback Predictions" and uses the same dashed red styling, maintaining visual consistency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pipeline" class="dark-section">
+  <div class="container">
+    <div class="section-label">04 / Data Pipeline</div>
+    <h2>Multi-Layer Data Pipeline</h2>
+    <p class="section-intro">Raw market data travels through a medallion-style architecture (bronze, silver) before reaching the prediction engine. Each layer adds validation, normalization, and business-logic transformations.</p>
+
+    <div class="pipeline-stages">
+      <div class="pipeline-stage">
+        <div class="stage-badge bronze">Bronze</div>
+        <h4>Raw Ingestion</h4>
+        <p>yfinance and Financial Modeling Prep API data is pulled by Prefect-orchestrated Python tasks. Raw JSON/CSV payloads land in <strong>Azure Blob Storage</strong> without modification, giving a complete audit trail of every upstream value.</p>
+        <div class="stage-tech">yfinance / FMP API / Prefect / Azure Blob</div>
+      </div>
+      <div class="pipeline-connector">to</div>
+      <div class="pipeline-stage">
+        <div class="stage-badge silver">Silver</div>
+        <h4>Cleaned and Typed</h4>
+        <p>Azure Data Factory pipelines validate schemas, cast columns to correct SQL types, deduplicate records, and load into <strong>Azure SQL Database</strong>. The primary tables are <code>StockPriceSilverData_Table</code> and <code>Financial_Statement_Historical_Dimensional_Table</code>.</p>
+        <div class="stage-tech">Azure Data Factory / Azure SQL / Polars</div>
+      </div>
+      <div class="pipeline-connector">to</div>
+      <div class="pipeline-stage">
+        <div class="stage-badge gold">Serving</div>
+        <h4>API and Model Input</h4>
+        <p>Django views query the silver layer via pyodbc, construct pandas DataFrames, and route data into either the LSTM model or the chart-data endpoints. Results are serialized as JSON and consumed by the web and mobile clients.</p>
+        <div class="stage-tech">Django / pyodbc / pandas / NumPy</div>
+      </div>
+    </div>
+
+    <div class="content-block" style="margin-top:3rem;">
+      <h3>Key Database Tables</h3>
+      <div class="db-tables">
+        <div class="db-table">
+          <div class="db-table-name">StockPriceSilverData_Table</div>
+          <div class="db-columns">
+            <span>Symbol</span><span>Date</span><span>Close_Prices</span><span>High_Prices</span>
+            <span>Low_Prices</span><span>Open_Prices</span><span>Volume</span><span>Market_Index</span>
+          </div>
+          <p class="db-desc">Core OHLCV store. Queried for every chart render and model inference call.</p>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">Financial_Statement_Historical_Dimensional_Table</div>
+          <div class="db-columns">
+            <span>Symbol</span><span>Date</span><span>peRatio</span><span>tangibleBookValuePerShare</span>
+          </div>
+          <p class="db-desc">Fundamental financial statements. Joined to the price table for the stock-details panel.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="container">
+    <div class="section-label">05 / Tech Stack</div>
+    <h2>Technologies Used</h2>
+
+    <div class="stack-grid">
+      <div class="stack-category">
+        <h4>Machine Learning</h4>
+        <ul>
+          <li><strong>LSTM Neural Network</strong>: custom PyTorch model, serialized with joblib</li>
+          <li><strong>scikit-learn LinearRegression</strong>: fallback predictor</li>
+          <li><strong>pandas and NumPy</strong>: feature engineering and array operations</li>
+        </ul>
+      </div>
+      <div class="stack-category">
+        <h4>Backend</h4>
+        <ul>
+          <li><strong>Django 5.1.7</strong>: web framework and ORM</li>
+          <li><strong>Django REST Framework</strong>: JSON API layer</li>
+          <li><strong>pyodbc</strong>: direct Azure SQL connectivity</li>
+          <li><strong>joblib</strong>: model serialization and deserialization</li>
+        </ul>
+      </div>
+      <div class="stack-category">
+        <h4>Data Pipeline</h4>
+        <ul>
+          <li><strong>Prefect</strong>: Python pipeline orchestration</li>
+          <li><strong>Azure Data Factory</strong>: ETL and ingestion pipelines</li>
+          <li><strong>Azure Blob Storage</strong>: bronze data lake</li>
+          <li><strong>Azure SQL Database</strong>: silver query layer</li>
+          <li><strong>Polars</strong>: fast DataFrame transformations in pipeline</li>
+        </ul>
+      </div>
+      <div class="stack-category">
+        <h4>Frontend</h4>
+        <ul>
+          <li><strong>Bootstrap 5.3.3</strong>: responsive layout and components</li>
+          <li><strong>Chart.js</strong>: line, bar, and scatter charts</li>
+          <li><strong>AOS</strong>: scroll-triggered animations</li>
+          <li><strong>Flutter</strong>: cross-platform mobile app (Dart)</li>
+          <li><strong>Vanilla JavaScript</strong>: API client and chart updates</li>
+        </ul>
+      </div>
+      <div class="stack-category">
+        <h4>Data Sources</h4>
+        <ul>
+          <li><strong>yfinance</strong>: historical OHLCV data</li>
+          <li><strong>Financial Modeling Prep (FMP)</strong>: fundamentals and news</li>
+          <li><strong>S&amp;P 500, NASDAQ, Dow Jones</strong>: market index data</li>
+        </ul>
+      </div>
+      <div class="stack-category">
+        <h4>Quality and DevOps</h4>
+        <ul>
+          <li><strong>SonarCloud</strong>: static analysis and security scanning</li>
+          <li><strong>Git / GitHub</strong>: version control and CI</li>
+          <li><strong>Kubernetes</strong>: container orchestration (planned)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p class="footer-title">The Almanac Predictor</p>
+    <p>Real-Time Stock Prediction and Financial Analytics, Capstone 2025</p>
+    <p class="footer-small">Built with Django, LSTM, Azure, and Chart.js</p>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>
