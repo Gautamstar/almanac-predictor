@@ -44,8 +44,8 @@ sections.forEach(s => navObserver.observe(s));
   resize();
   window.addEventListener('resize', () => { resize(); draw(); });
 
-  const GREEN = 'rgba(134,239,172,0.75)';
-  const RED   = 'rgba(252,165,165,0.75)';
+  const GREEN = 'rgba(255,255,255,0.6)';
+  const RED   = 'rgba(255,255,255,0.25)';
   const NUM   = 60;
 
   function generateCandles(n) {
@@ -107,8 +107,8 @@ sections.forEach(s => navObserver.observe(s));
 
     // Overlay gradient
     const grad = ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, 'rgba(13,43,107,0.25)');
-    grad.addColorStop(1, 'rgba(13,43,107,0.75)');
+    grad.addColorStop(0, 'rgba(0,56,101,0.2)');
+    grad.addColorStop(1, 'rgba(0,36,63,0.8)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
   }
